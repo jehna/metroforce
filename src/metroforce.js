@@ -43,8 +43,7 @@ function metroforce() {
     
     for(var i = 0; i < stationNames.length; i++) {
         // Draw some stations
-        var station = new Vector2(Utils.randomRange(-100,100),Utils.randomRange(-100,100));
-        station.name = stationNames[i];
+        var station = new Vector2(stationNames[i], Utils.randomRange(-100,100),Utils.randomRange(-100,100));
         stations.push(station);
         world.addChild(station);
     }
