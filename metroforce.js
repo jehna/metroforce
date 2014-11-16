@@ -314,6 +314,9 @@ function World() {
 World.prototype.addChild = function(node) {
     this.nodes.push(node);
 }
+World.prototype.removeChild = function(node) {
+    this.nodes.splice(this.nodes.indexOf(node), 1);
+}
 
 World.prototype.render = function() {
     
