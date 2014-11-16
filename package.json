@@ -1,0 +1,22 @@
+{
+  "name": "MetroForce",
+  "version": "0.0.0",
+  "description": "",
+  "main": "metroforce.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-concat-in-order": "~0.1.6",
+    "grunt-concat-sourcemap": "~0.4.3",
+    "grunt-contrib-concat": "~0.5.0",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-wrap": "~0.3.0"
+  }
+}
