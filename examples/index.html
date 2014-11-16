@@ -5,12 +5,9 @@
 <link href="css/sample-style.css" rel="stylesheet" />
 </head>
 <body>
-<canvas id="c" width="1500" height="1500"></canvas>
 <svg id="svg" width="1500" height="1500">
 </svg>
 <script>
-    var canvas = document.getElementById("c");
-    var ctx = canvas.getContext("2d");
     var svg = document.getElementById("svg");
     var xmlns = "http://www.w3.org/2000/svg";
     var edgesGroup = document.createElementNS(xmlns, "g");
@@ -29,22 +26,6 @@
     }
     
     Vector2.prototype.render = function() {
-        ctx.fillStyle = "rgb(255,0,0)";
-        ctx.beginPath();
-        ctx.arc(
-            this.x,
-            this.y,
-            5,
-            0,
-            2*Math.PI
-        )
-        ctx.fill();
-        
-        if (this.name) {
-            ctx.fillStyle = "rgb(0,0,0)";
-            ctx.font="13px Arial";
-            ctx.fillText(this.name,this.x + 10,this.y - 10);
-        }
         
         var circle = document.createElementNS(xmlns, "circle");
         circle.setAttribute("cx", this.x);
@@ -111,12 +92,6 @@
     }
     
     Edge.prototype.render = function() {
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = "rgb(0,0,255)";
-        ctx.beginPath();
-        ctx.moveTo(this.from.x, this.from.y);
-        ctx.lineTo(this.to.x, this.to.y);
-        ctx.stroke();
         
         var line = document.createElementNS(xmlns, "line");
         line.setAttribute("x1", this.from.x);
@@ -141,8 +116,7 @@
     }
     
     World.prototype.render = function() {
-        ctx.fillStyle = "rgba(255,255,255,0.3)";
-        ctx.fillRect(0,0,canvas.width,canvas.height);
+        
         this.nodes.forEach(function(node){
             node.render();
         });
