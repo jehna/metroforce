@@ -7,7 +7,32 @@
 </head>
 <body>
 <script type="text/javascript">
-metroforce();
+var metro = new metroforce(
+    [
+        'Viisikulma',
+        'R-kioski',
+        'Len\'s keishoku',
+        'Sis Deli',
+        'Pursari-Albertinkatu kulma',
+        'Suomi kahvila',
+        'Hoku',
+        'Kinki',
+        'Puisto',
+        'Wanha ct HQ',
+        
+        'Brooklyn cafe',
+        'Vivo\'s',
+        'We got beef',
+        'Fafa\'s',
+        'Beefy queen'
+    ],
+    {
+        'Pursimiehenkatu': [[0,1,2,3,4,5]],
+        'Albertinkatu': [[4,6]],
+        'Frederikinkatu': [[1,10,11]],
+        'Iso-Roobertinkatu': [[11,12,13]],
+        'Other': [[5,7,8,9,0],[13,14]]
+    });
 </script>
 </body>
 </html>
