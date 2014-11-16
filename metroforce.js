@@ -2,6 +2,60 @@ window.metroforce = (function() {
 
 var xmlns = "http://www.w3.org/2000/svg";
 var document = window.document;
+var edgesGroup, labelsGroup, stationsGroup;
+function Edge(from,to,label) {
+    this.from = from;
+    this.to = to;
+    this.label = label;
+    from.edges.push(this);
+    to.edges.push(this);
+}
+
+Edge.prototype.render = function() {
+    
+    var line = document.createElementNS(xmlns, "line");
+    line.setAttribute("x1", this.from.x);
+    line.setAttribute("y1", this.from.y);
+    line.setAttribute("x2", this.to.x);
+    line.setAttribute("y2", this.to.y);
+    
+    if (this.label) {
+        line.setAttribute("class", this.label.className);
+    }
+    
+    edgesGroup.appendChild(line);
+    return this;
+}
+function Label(name) {
+    this.name = name;
+    this.className = name.replace(/\W/g,function(a) {
+        if (/[ _-]/.test(a)) {
+            return "-";
+        } else {
+            return "";
+        }
+    }).toLowerCase();
+    this.index = Label.index++;
+}
+Label.index = 0;
+
+Label.prototype.render = function() {
+    
+    var y = this.index * 20 + 30;
+    var text = document.createElementNS(xmlns, "text");
+    text.setAttribute("y", y);
+    text.setAttribute("x", 30);
+    text.innerHTML = this.name;
+    labelsGroup.appendChild(text);
+    
+    var line = document.createElementNS(xmlns, "line");
+    line.setAttribute("x1", 0);
+    line.setAttribute("y1", y);
+    line.setAttribute("x2", 20);
+    line.setAttribute("y2", y);
+    line.setAttribute("class", this.className);
+    labelsGroup.appendChild(line);
+}
 
 
 
@@ -13,136 +67,16 @@ function metroforce() {
         width: 1500,
         height: 1500
     });
-    var edgesGroup = document.createElementNS(xmlns, "g");
-    svg.appendChild(edgesGroup);
-    var stationsGroup = document.createElementNS(xmlns, "g");
-    svg.appendChild(stationsGroup);
-    var labelsGroup = document.createElementNS(xmlns, "g");
-    labelsGroup.setAttribute("transform", "translate("+(svg.width.baseVal.value - 800)+",0)");
-    svg.appendChild(labelsGroup);
     
-    function Vector2(x,y) {
-        this._x = x || Math.randomRange(-100,100);
-        this._y = y || Math.randomRange(-100,100);
-        this.velocity = {x:0,y:0};
-        this.edges = [];
-    }
-    
-    Vector2.prototype.render = function() {
-        
-        var circle = document.createElementNS(xmlns, "circle");
-        circle.setAttribute("cx", this.x);
-        circle.setAttribute("cy", this.y);
-        circle.setAttribute("r", 8);
-        stationsGroup.appendChild(circle);
-        
-        if (this.name) {
-            var text = document.createElementNS(xmlns, "text");
-            text.setAttribute("x", this.x + 10);
-            text.setAttribute("y", this.y - 10);
-            text.innerHTML = this.name;
-            stationsGroup.appendChild(text);
-        }
-        
-        return this;
-    }
-    
-    Vector2.prototype.__defineGetter__("x", function() {
-        return /*(canvas.width/2) + */(this._x * 30) + 50;
+    edgesGroup = Utils.createSVGElem("g",svg);
+    stationsGroup = Utils.createSVGElem("g",svg);
+    labelsGroup = Utils.createSVGElem("g",svg, {
+        transform: "translate("+(svg.width.baseVal.value - 800)+",0)"
     });
     
-    Vector2.prototype.__defineGetter__("y", function() {
-        return /*(canvas.height/2) + */(this._y * 30) + 50;
-    });
     
-    function Label(name) {
-        this.name = name;
-        this.className = name.replace(/\W/g,function(a) {
-            if (/[ _-]/.test(a)) {
-                return "-";
-            } else {
-                return "";
-            }
-        }).toLowerCase();
-        this.index = Label.index++;
-    }
-    Label.index = 0;
     
-    Label.prototype.render = function() {
         
-        var y = this.index * 20 + 30;
-        var text = document.createElementNS(xmlns, "text");
-        text.setAttribute("y", y);
-        text.setAttribute("x", 30);
-        text.innerHTML = this.name;
-        labelsGroup.appendChild(text);
-        
-        var line = document.createElementNS(xmlns, "line");
-        line.setAttribute("x1", 0);
-        line.setAttribute("y1", y);
-        line.setAttribute("x2", 20);
-        line.setAttribute("y2", y);
-        line.setAttribute("class", this.className);
-        labelsGroup.appendChild(line);
-    }
-    
-    function Edge(from,to,label) {
-        this.from = from;
-        this.to = to;
-        this.label = label;
-        from.edges.push(this);
-        to.edges.push(this);
-    }
-    
-    Edge.prototype.render = function() {
-        
-        var line = document.createElementNS(xmlns, "line");
-        line.setAttribute("x1", this.from.x);
-        line.setAttribute("y1", this.from.y);
-        line.setAttribute("x2", this.to.x);
-        line.setAttribute("y2", this.to.y);
-        
-        if (this.label) {
-            line.setAttribute("class", this.label.className);
-        }
-        
-        edgesGroup.appendChild(line);
-        return this;
-    }
-    
-    function World() {
-        this.nodes = [];
-    }
-    
-    World.prototype.addChild = function(node) {
-        this.nodes.push(node);
-    }
-    
-    World.prototype.render = function() {
-        
-        this.nodes.forEach(function(node){
-            node.render();
-        });
-    }
-    
-    World.prototype.play = function() {
-        var self = this;
-        this.player = setInterval(function() {
-            self.render();
-        }, 1000 / 30);
-    }
-    
-    World.prototype.stop = function() {
-        clearInterval(this.player);
-    }
-    
-    Math.randomRange = function(from, to) {
-        return Math.floor(Math.random() * (to-from)) + from;
-    }
-    Math.roundToNearest = function(number, nearest) {
-        return Math.round(number/nearest)*nearest;
-    }
-    
     var world = new World();
     var stations = [];
     
@@ -167,7 +101,7 @@ function metroforce() {
     
     for(var i = 0; i < stationNames.length; i++) {
         // Draw some stations
-        var station = new Vector2(Math.randomRange(-100,100),Math.randomRange(-100,100));
+        var station = new Vector2(Utils.randomRange(-100,100),Utils.randomRange(-100,100));
         station.name = stationNames[i];
         stations.push(station);
         world.addChild(station);
@@ -218,8 +152,8 @@ function metroforce() {
     for(var i = 0; i < 40; i++) {
         // Draw some edges
         var edge = new Edge(
-            stations[Math.randomRange(0,stations.length)],
-            stations[Math.randomRange(0,stations.length)]
+            stations[Utils.randomRange(0,stations.length)],
+            stations[Utils.randomRange(0,stations.length)]
         );
         world.addChild(edge);
     }*/
@@ -256,8 +190,8 @@ function metroforce() {
             }
             
             // Add the attration to nearest whole number
-            v.net_force.x += (Math.roundToNearest(v._x,5) - v._x) * states[currState].WHOLENUMBER;
-            v.net_force.y += (Math.roundToNearest(v._y,5) - v._y) * states[currState].WHOLENUMBER;
+            v.net_force.x += (Utils.roundToNearest(v._x,5) - v._x) * states[currState].WHOLENUMBER;
+            v.net_force.y += (Utils.roundToNearest(v._y,5) - v._y) * states[currState].WHOLENUMBER;
             
             for( var j = 0; j < stations[i].edges.length; j++) { // loop through edges
                 u = stations[i].edges[j].to == stations[i] ? stations[i].edges[j].from : stations[i].edges[j].to;
@@ -296,8 +230,8 @@ function metroforce() {
     while (times < 1000 && goforit()) {};
     
     for(var i = 0; i < stations.length; i++) {
-        stations[i]._x = Math.roundToNearest(stations[i]._x, 5);
-        stations[i]._y = Math.roundToNearest(stations[i]._y, 5);
+        stations[i]._x = Utils.roundToNearest(stations[i]._x, 5);
+        stations[i]._y = Utils.roundToNearest(stations[i]._y, 5);
     }
     
     // Find minimum x & y
@@ -327,8 +261,74 @@ var Utils = {
         }
         parent.appendChild(elem);
         return elem;
+    },
+    randomRange: function(from, to) {
+        return Math.floor(Math.random() * (to-from)) + from;
+    },
+    roundToNearest: function(number, nearest) {
+        return Math.round(number/nearest)*nearest;
     }
 }
+function Vector2(x,y) {
+    this._x = x || Math.randomRange(-100,100);
+    this._y = y || Math.randomRange(-100,100);
+    this.velocity = {x:0,y:0};
+    this.edges = [];
+}
+
+Vector2.prototype.render = function() {
+    
+    var circle = document.createElementNS(xmlns, "circle");
+    circle.setAttribute("cx", this.x);
+    circle.setAttribute("cy", this.y);
+    circle.setAttribute("r", 8);
+    stationsGroup.appendChild(circle);
+    
+    if (this.name) {
+        var text = document.createElementNS(xmlns, "text");
+        text.setAttribute("x", this.x + 10);
+        text.setAttribute("y", this.y - 10);
+        text.innerHTML = this.name;
+        stationsGroup.appendChild(text);
+    }
+    
+    return this;
+}
+
+Vector2.prototype.__defineGetter__("x", function() {
+    return /*(canvas.width/2) + */(this._x * 30) + 50;
+});
+
+Vector2.prototype.__defineGetter__("y", function() {
+    return /*(canvas.height/2) + */(this._y * 30) + 50;
+});
+
+function World() {
+    this.nodes = [];
+}
+
+World.prototype.addChild = function(node) {
+    this.nodes.push(node);
+}
+
+World.prototype.render = function() {
+    
+    this.nodes.forEach(function(node){
+        node.render();
+    });
+}
+
+World.prototype.play = function() {
+    var self = this;
+    this.player = setInterval(function() {
+        self.render();
+    }, 1000 / 30);
+}
+
+World.prototype.stop = function() {
+    clearInterval(this.player);
+}
+
 
 return metroforce;
 })();

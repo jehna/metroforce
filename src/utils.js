@@ -7,5 +7,11 @@ var Utils = {
         }
         parent.appendChild(elem);
         return elem;
+    },
+    randomRange: function(from, to) {
+        return Math.floor(Math.random() * (to-from)) + from;
+    },
+    roundToNearest: function(number, nearest) {
+        return Math.round(number/nearest)*nearest;
     }
 }
