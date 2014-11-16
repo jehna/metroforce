@@ -1,0 +1,18 @@
+polyline, line {
+    fill: none;
+    stroke: #AEAEAE;
+    stroke-width: 9px;
+    stroke-linejoin="round";
+}
+
+circle {
+    fill: #FFFFFF;
+    stroke: #4D4D4D;
+    stroke-width: 3px;
+    z-index: 2;
+}
+text {
+    fill: #000;
+    dominant-baseline: central;
+    font: 13px Arial;
+}
