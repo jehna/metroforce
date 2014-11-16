@@ -17,7 +17,7 @@ metroforce(stationNames, roads[, options]);
 ### Example usage
 ```javascript
 new metroforce(
-    [
+    [ // Points
         'Viisikulma',
         'R-kioski',
         'Len\'s keishoku',
@@ -35,7 +35,7 @@ new metroforce(
         'Fafa\'s',
         'Beefy queen'
     ],
-    {
+    { // Roads
         'Pursimiehenkatu': [[0,1,2,3,4,5]],
         'Albertinkatu': [[4,6]],
         'Frederikinkatu': [[1,10,11]],
