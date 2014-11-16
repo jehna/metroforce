@@ -35,26 +35,28 @@ function Label(name) {
             return "";
         }
     }).toLowerCase();
+    
     this.index = Label.index++;
+    
+    this.element = Utils.createSVGElem("text", labelsGroup);
+    this.lineElement = Utils.createSVGElem("line", labelsGroup, {
+        class: this.className
+    });
 }
 Label.index = 0;
 
 Label.prototype.render = function() {
     
     var y = this.index * 20 + 30;
-    var text = document.createElementNS(xmlns, "text");
-    text.setAttribute("y", y);
-    text.setAttribute("x", 30);
-    text.innerHTML = this.name;
-    labelsGroup.appendChild(text);
     
-    var line = document.createElementNS(xmlns, "line");
-    line.setAttribute("x1", 0);
-    line.setAttribute("y1", y);
-    line.setAttribute("x2", 20);
-    line.setAttribute("y2", y);
-    line.setAttribute("class", this.className);
-    labelsGroup.appendChild(line);
+    this.element.setAttribute("y", y);
+    this.element.setAttribute("x", 30);
+    this.element.innerHTML = this.name;
+    
+    this.lineElement.setAttribute("x1", 0);
+    this.lineElement.setAttribute("y1", y);
+    this.lineElement.setAttribute("x2", 20);
+    this.lineElement.setAttribute("y2", y);
 }
 
 
