@@ -13,5 +13,12 @@ var Utils = {
     },
     roundToNearest: function(number, nearest) {
         return Math.round(number/nearest)*nearest;
+    },
+    expand: function(withObj, srcObj) {
+        withObj = withObj || {};
+        for (var i in withObj) {
+            srcObj[i] = withObj[i];
+        }
+        return srcObj;
     }
 }

@@ -57,19 +57,24 @@ Label.prototype.render = function() {
     this.lineElement.setAttribute("x2", 20);
     this.lineElement.setAttribute("y2", y);
 }
-function metroforce(stationNames, roads) {
+function metroforce(stationNames, roads, options) {
     // constructor
-
+    
+    this.options = Utils.expand(options, {
+        width: 700,
+        height: 800,
+        labelsPos: 200
+    });
     
     this.svg = Utils.createSVGElem("svg", document.body, {
-        width: 1500,
-        height: 1500
+        width: this.options.width,
+        height: this.options.height
     });
     
     edgesGroup = Utils.createSVGElem("g",this.svg);
     stationsGroup = Utils.createSVGElem("g",this.svg);
     labelsGroup = Utils.createSVGElem("g",this.svg, {
-        transform: "translate("+(this.svg.width.baseVal.value - 800)+",0)"
+        transform: "translate("+(this.svg.width.baseVal.value - this.options.labelsPos)+",0)"
     });
     
     
@@ -222,6 +227,13 @@ var Utils = {
     },
     roundToNearest: function(number, nearest) {
         return Math.round(number/nearest)*nearest;
+    },
+    expand: function(withObj, srcObj) {
+        withObj = withObj || {};
+        for (var i in withObj) {
+            srcObj[i] = withObj[i];
+        }
+        return srcObj;
     }
 }
 function Vector2(name, x, y) {
