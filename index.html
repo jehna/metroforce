@@ -3,7 +3,7 @@
 <head>
 </head>
 <body>
-<canvas id="c" width="800" height="500" />
+<canvas id="c" width="1500" height="1500" />
 <script>
     var canvas = document.getElementById("c");
     var ctx = canvas.getContext("2d");
@@ -26,15 +26,21 @@
             2*Math.PI
         )
         ctx.fill();
+        
+        if (this.name) {
+            ctx.fillStyle = "rgb(0,0,0)";
+            ctx.font="13px Arial";
+            ctx.fillText(this.name,this.x + 10,this.y - 10);
+        }
         return this;
     }
     
     Vector2.prototype.__defineGetter__("x", function() {
-        return (canvas.width/2) + (this._x * 10);
+        return /*(canvas.width/2) + */(this._x * 30) + 50;
     });
     
     Vector2.prototype.__defineGetter__("y", function() {
-        return (canvas.height/2) + (this._y * 10);
+        return /*(canvas.height/2) + */(this._y * 30) + 50;
     });
     
     function Edge(from,to) {
@@ -91,27 +97,59 @@
     var world = new World();
     var stations = [];
     
-    for(var i = 0; i < 30; i++) {
+    var stationNames = [
+        "Viisikulma",
+        "R-kioski",
+        "Len's keishoku",
+        "Sis Deli",
+        "Pursari-Albertinkatu kulma",
+        "Suomi kahvila",
+        "Hoku",
+        "Kinki",
+        "Puisto",
+        "Wanha ct HQ",
+        
+        "Brooklyn cafe",
+        "Vivo's",
+        "We got beef",
+        "Fafa's",
+        "Beefy queen"
+    ];
+    
+    for(var i = 0; i < stationNames.length; i++) {
         // Draw some stations
         var station = new Vector2(Math.randomRange(-100,100),Math.randomRange(-100,100));
+        station.name = stationNames[i];
         stations.push(station);
         world.addChild(station);
     }
     
-    /*
+    
     var edges = [
         new Edge(stations[0], stations[1]),
         new Edge(stations[1], stations[2]),
         new Edge(stations[2], stations[3]),
         new Edge(stations[3], stations[4]),
         new Edge(stations[4], stations[5]),
-        new Edge(stations[5], stations[0])
+        new Edge(stations[4], stations[6]),
+        new Edge(stations[5], stations[7]),
+        new Edge(stations[7], stations[8]),
+        new Edge(stations[8], stations[9]),
+        new Edge(stations[9], stations[0]),
+        
+        new Edge(stations[1], stations[10]),
+        new Edge(stations[10], stations[11]),
+        new Edge(stations[11], stations[12]),
+        new Edge(stations[12], stations[13]),
+        new Edge(stations[13], stations[14])
     ];
     for(var i = 0; i < edges.length; i++) {
         // Draw some edges
         var edge = edges[i];
         world.addChild(edge);
-    }*/
+    }
+    
+    /*
     var edges = [];
     for(var i = 0; i < 40; i++) {
         // Draw some edges
@@ -120,7 +158,7 @@
             stations[Math.randomRange(0,stations.length)]
         );
         world.addChild(edge);
-    }
+    }*/
     
     function State(repulsion, wholeNumber, attraction, limit) {
         this.REPULSION = repulsion;
