@@ -18,6 +18,19 @@ circle {
 text {
     fill: #000;
     dominant-baseline: central;
+    font: 13px Arial;
+}
+.pursimiehenkatu {
+    stroke: #E7DE39;
+}
+.albertinkatu {
+    stroke: #E24C4C;
+}
+line.frederikinkatu {
+    stroke: #30D797;
+}
+line.iso-roobertinkatu {
+    stroke: #5C7ED8;
 }
 </style>
 </head>
@@ -34,6 +47,9 @@ text {
     svg.appendChild(edgesGroup);
     var stationsGroup = document.createElementNS(xmlns, "g");
     svg.appendChild(stationsGroup);
+    var labelsGroup = document.createElementNS(xmlns, "g");
+    labelsGroup.setAttribute("transform", "translate("+(svg.width.baseVal.value - 800)+",0)");
+    svg.appendChild(labelsGroup);
     
     function Vector2(x,y) {
         this._x = x || Math.randomRange(-100,100);
@@ -85,9 +101,41 @@ text {
         return /*(canvas.height/2) + */(this._y * 30) + 50;
     });
     
-    function Edge(from,to) {
+    function Label(name) {
+        this.name = name;
+        this.className = name.replace(/\W/g,function(a) {
+            if (/[ _-]/.test(a)) {
+                return "-";
+            } else {
+                return "";
+            }
+        }).toLowerCase();
+        this.index = Label.index++;
+    }
+    Label.index = 0;
+    
+    Label.prototype.render = function() {
+        
+        var y = this.index * 20 + 30;
+        var text = document.createElementNS(xmlns, "text");
+        text.setAttribute("y", y);
+        text.setAttribute("x", 30);
+        text.innerHTML = this.name;
+        labelsGroup.appendChild(text);
+        
+        var line = document.createElementNS(xmlns, "line");
+        line.setAttribute("x1", 0);
+        line.setAttribute("y1", y);
+        line.setAttribute("x2", 20);
+        line.setAttribute("y2", y);
+        line.setAttribute("class", this.className);
+        labelsGroup.appendChild(line);
+    }
+    
+    function Edge(from,to,label) {
         this.from = from;
         this.to = to;
+        this.label = label;
         from.edges.push(this);
         to.edges.push(this);
     }
@@ -105,6 +153,11 @@ text {
         line.setAttribute("y1", this.from.y);
         line.setAttribute("x2", this.to.x);
         line.setAttribute("y2", this.to.y);
+        
+        if (this.label) {
+            line.setAttribute("class", this.label.className);
+        }
+        
         edgesGroup.appendChild(line);
         return this;
     }
@@ -173,23 +226,38 @@ text {
         world.addChild(station);
     }
     
+    var labelNames = [
+        "Pursimiehenkatu",
+        "Albertinkatu",
+        "Frederikinkatu",
+        "Iso-Roobertinkatu",
+        "Other"
+    ];
+    
+    var labels = [];
+    for(var i in labelNames) {
+        var label = new Label(labelNames[i]);
+        labels.push(label);
+        world.addChild(label);
+    }
+    
     
     var edges = [
-        new Edge(stations[0], stations[1]),
-        new Edge(stations[1], stations[2]),
-        new Edge(stations[2], stations[3]),
-        new Edge(stations[3], stations[4]),
-        new Edge(stations[4], stations[5]),
-        new Edge(stations[4], stations[6]),
+        new Edge(stations[0], stations[1], labels[0]),
+        new Edge(stations[1], stations[2], labels[0]),
+        new Edge(stations[2], stations[3], labels[0]),
+        new Edge(stations[3], stations[4], labels[0]),
+        new Edge(stations[4], stations[5], labels[0]),
+        new Edge(stations[4], stations[6], labels[1]),
         new Edge(stations[5], stations[7]),
         new Edge(stations[7], stations[8]),
         new Edge(stations[8], stations[9]),
         new Edge(stations[9], stations[0]),
         
-        new Edge(stations[1], stations[10]),
-        new Edge(stations[10], stations[11]),
-        new Edge(stations[11], stations[12]),
-        new Edge(stations[12], stations[13]),
+        new Edge(stations[1], stations[10], labels[2]),
+        new Edge(stations[10], stations[11], labels[2]),
+        new Edge(stations[11], stations[12], labels[3]),
+        new Edge(stations[12], stations[13], labels[3]),
         new Edge(stations[13], stations[14])
     ];
     for(var i = 0; i < edges.length; i++) {
