@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<canvas id="c" width="800" height="500" />
+<script>
+    var canvas = document.getElementById("c");
+    var ctx = canvas.getContext("2d");
+    
+    function Vector2(x,y) {
+        this._x = x || Math.randomRange(-100,100);
+        this._y = y || Math.randomRange(-100,100);
+        this.velocity = {x:0,y:0};
+        this.edges = [];
+    }
+    
+    Vector2.prototype.render = function() {
+        ctx.fillStyle = "rgb(255,0,0)";
+        ctx.beginPath();
+        ctx.arc(
+            this.x,
+            this.y,
+            5,
+            0,
+            2*Math.PI
+        )
+        ctx.fill();
+        return this;
+    }
+    
+    Vector2.prototype.__defineGetter__("x", function() {
+        return (canvas.width/2) + (this._x * 10);
+    });
+    
+    Vector2.prototype.__defineGetter__("y", function() {
+        return (canvas.height/2) + (this._y * 10);
+    });
+    
+    function Edge(from,to) {
+        this.from = from;
+        this.to = to;
+        from.edges.push(this);
+        to.edges.push(this);
+    }
+    
+    Edge.prototype.render = function() {
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "rgb(0,0,255)";
+        ctx.beginPath();
+        ctx.moveTo(this.from.x, this.from.y);
+        ctx.lineTo(this.to.x, this.to.y);
+        ctx.stroke();
+        return this;
+    }
+    
+    function World() {
+        this.nodes = [];
+    }
+    
+    World.prototype.addChild = function(node) {
+        this.nodes.push(node);
+    }
+    
+    World.prototype.render = function() {
+        ctx.fillStyle = "rgba(255,255,255,0.3)";
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+        this.nodes.forEach(function(node){
+            node.render();
+        });
+    }
+    
+    World.prototype.play = function() {
+        var self = this;
+        this.player = setInterval(function() {
+            self.render();
+        }, 1000 / 30);
+    }
+    
+    World.prototype.stop = function() {
+        clearInterval(this.player);
+    }
+    
+    Math.randomRange = function(from, to) {
+        return Math.floor(Math.random() * (to-from)) + from;
+    }
+    Math.roundToNearest = function(number, nearest) {
+        return Math.round(number/nearest)*nearest;
+    }
+    
+    var world = new World();
+    var stations = [];
+    
+    for(var i = 0; i < 30; i++) {
+        // Draw some stations
+        var station = new Vector2(Math.randomRange(-100,100),Math.randomRange(-100,100));
+        stations.push(station);
+        world.addChild(station);
+    }
+    
+    /*
+    var edges = [
+        new Edge(stations[0], stations[1]),
+        new Edge(stations[1], stations[2]),
+        new Edge(stations[2], stations[3]),
+        new Edge(stations[3], stations[4]),
+        new Edge(stations[4], stations[5]),
+        new Edge(stations[5], stations[0])
+    ];
+    for(var i = 0; i < edges.length; i++) {
+        // Draw some edges
+        var edge = edges[i];
+        world.addChild(edge);
+    }*/
+    var edges = [];
+    for(var i = 0; i < 40; i++) {
+        // Draw some edges
+        var edge = new Edge(
+            stations[Math.randomRange(0,stations.length)],
+            stations[Math.randomRange(0,stations.length)]
+        );
+        world.addChild(edge);
+    }
+    
+    function State(repulsion, wholeNumber, attraction, limit) {
+        this.REPULSION = repulsion;
+        this.WHOLENUMBER = wholeNumber;
+        this.ATTRACTION = attraction;
+        this.LIMIT = limit;
+    }
+    
+    // Add solver
+    var times = 0;
+    var currState = 0;
+    var states = [
+        new State(2.6,0,0.2,0.4),
+        new State(0.45,0.45,0.03,0.01)
+    ];
+    //world.addChild({render: function() {
+    function goforit() {
+        for(var i = 0; i < stations.length; i++) {  // loop through vertices
+            var v = stations[i];
+            var u;
+            
+            v.net_force = {x:0,y:0};
+            for( var j = 0; j < stations.length; j++) { // loop through other vertices
+                if(i==j)continue;
+                u = stations[j]; 
+                // squared distance between "u" and "v" in 2D space
+                var rsq = ((v._x-u._x)*(v._x-u._x)+(v._y-u._y)*(v._y-u._y)) || 0.001;
+                // counting the repulsion between two vertices 
+                v.net_force.x += states[currState].REPULSION * (v._x-u._x) /rsq;
+                v.net_force.y += states[currState].REPULSION * (v._y-u._y) /rsq;
+            }
+            
+            // Add the attration to nearest whole number
+            v.net_force.x += (Math.roundToNearest(v._x,5) - v._x) * states[currState].WHOLENUMBER;
+            v.net_force.y += (Math.roundToNearest(v._y,5) - v._y) * states[currState].WHOLENUMBER;
+            
+            for( var j = 0; j < stations[i].edges.length; j++) { // loop through edges
+                u = stations[i].edges[j].to == stations[i] ? stations[i].edges[j].from : stations[i].edges[j].to;
+                // countin the attraction
+                v.net_force.x += states[currState].ATTRACTION*(u._x - v._x);
+                v.net_force.y += states[currState].ATTRACTION*(u._y - v._y);
+            }
+            // counting the velocity (with damping 0.85)
+            v.velocity.x = (v.velocity.x + v.net_force.x)*0.95; 
+            v.velocity.y = (v.velocity.y + v.net_force.y)*0.95;
+        }
+        
+        var total_net_force = 0;
+        
+        for(var i = 0; i < stations.length; i++) { // set new positions
+            var v = stations[i];
+            //if(v.isDragged){ v._x = mouseX; v._y = mouseY; }
+            //else {
+            v._x += v.velocity.x;
+            v._y += v.velocity.y;
+            total_net_force += (v.velocity.x*v.velocity.x)+(v.velocity.y*v.velocity.y);
+        }
+        
+        if (total_net_force < states[currState].LIMIT && currState < states.length-1) {
+            currState++;
+        } else if (total_net_force < states[currState].LIMIT) {
+            //world.stop();
+            //world.render();
+            return false;
+        }
+        times++;
+        //console.log(total_net_force, ++times);
+        return true;
+    };
+    
+    while (times < 1000 && goforit()) {};
+    
+    for(var i = 0; i < stations.length; i++) {
+        stations[i]._x = Math.roundToNearest(stations[i]._x, 5);
+        stations[i]._y = Math.roundToNearest(stations[i]._y, 5);
+    }
+    
+    // Find minimum x & y
+    var minimums = {x:Infinity,y:Infinity};
+    for(var i = 0; i < stations.length; i++) {
+        minimums.x = Math.min(minimums.x, stations[i]._x);
+        minimums.y = Math.min(minimums.y, stations[i]._y);
+    }
+    // Notmalize
+    for(var i = 0; i < stations.length; i++) {
+        stations[i]._x -= minimums.x;
+        stations[i]._y -= minimums.y;
+        stations[i]._x /= 5;
+        stations[i]._y /= 5;
+    }
+    
+    world.render();
+    
+    //world.play();
+    
+    
+</script>
+</body>
+</html>
